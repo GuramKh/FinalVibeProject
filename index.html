@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LaunchIQ — AI Startup Validator</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #070B14;
+      --surface:  #0E1525;
+      --surface2: #141D30;
+      --border:   #1E2D45;
+      --accent:   #6366F1;
+      --accent2:  #A78BFA;
+      --text:     #F1F5F9;
+      --text2:    #94A3B8;
+      --text3:    #64748B;
+      --green:    #10B981;
+      --yellow:   #F59E0B;
+      --red:      #EF4444;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(7,11,20,0.88);
+      backdrop-filter: blur(14px);
+      z-index: 100;
+    }
+    .logo {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 21px;
+      font-weight: 700;
+      background: linear-gradient(135deg,#6366F1,#A78BFA);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -0.4px;
+    }
+    .nav-badge {
+      font-size: 12px;
+      color: var(--text2);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 14px;
+      border-radius: 100px;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 52px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    .hero-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--accent2);
+      background: rgba(99,102,241,0.1);
+      border: 1px solid rgba(99,102,241,0.25);
+      padding: 6px 16px;
+      border-radius: 100px;
+      margin-bottom: 30px;
+      font-weight: 500;
+    }
+    .hero-chip::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: blink 2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.25} }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(36px, 6vw, 58px);
+      font-weight: 700;
+      line-height: 1.08;
+      letter-spacing: -2px;
+      margin-bottom: 22px;
+    }
+    .hero h1 span {
+      background: linear-gradient(135deg,#6366F1 0%,#A78BFA 55%,#60A5FA 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      font-size: 17px;
+      color: var(--text2);
+      max-width: 460px;
+      margin: 0 auto;
+      line-height: 1.75;
+    }
+
+    /* ── FORM WRAPPER ── */
+    .form-wrap {
+      max-width: 660px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    /* API bar */
+    .api-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 16px;
+      margin-bottom: 12px;
+    }
+    .api-bar label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .api-bar input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      font-size: 13px;
+      font-family: monospace;
+    }
+    .api-bar input::placeholder { color: var(--text3); }
+
+    /* Main card */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px;
+    }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .field { display: flex; flex-direction: column; gap: 7px; }
+    .field.full { grid-column: 1 / -1; }
+
+    label {
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--text2);
+      letter-spacing: 0.1px;
+    }
+    input[type="text"], input[type="password"], textarea, select {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      width: 100%;
+    }
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+    input::placeholder, textarea::placeholder { color: var(--text3); }
+
+    /* Analyze button */
+    .btn-analyze {
+      width: 100%;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: none;
+      border-radius: 12px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      letter-spacing: -0.2px;
+    }
+    .btn-analyze:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 36px rgba(99,102,241,0.45);
+    }
+    .btn-analyze:active:not(:disabled) { transform: translateY(0); }
+    .btn-analyze:disabled { opacity: 0.55; cursor: not-allowed; }
+
+    /* ── LOADING ── */
+    #loading {
+      display: none;
+      text-align: center;
+      padding: 80px 24px;
+      max-width: 520px;
+      margin: 0 auto;
+    }
+    #loading.active { display: block; }
+    .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin: 0 auto 22px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 24px;
+    }
+    .loading-steps { display: flex; flex-direction: column; gap: 9px; }
+    .step { font-size: 14px; color: var(--text3); transition: color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+    .step::before { content: '○'; }
+    .step.active { color: var(--accent2); }
+    .step.active::before { content: '◉'; animation: blink 1s infinite; }
+    .step.done { color: var(--green); }
+    .step.done::before { content: '●'; }
+
+    /* ── RESULTS ── */
+    #results {
+      display: none;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+    #results.active { display: block; }
+
+    .results-header {
+      text-align: center;
+      padding: 52px 0 40px;
+    }
+    .results-header h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .idea-name-display {
+      font-size: 15px;
+      color: var(--accent2);
+      font-weight: 600;
+    }
+
+    /* Score card */
+    .score-card {
+      background: linear-gradient(135deg,rgba(99,102,241,0.12),rgba(167,139,250,0.06));
+      border: 1px solid rgba(99,102,241,0.28);
+      border-radius: 20px;
+      padding: 40px 32px;
+      text-align: center;
+      margin-bottom: 18px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .score-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 84px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 6px;
+      transition: color 0.5s;
+    }
+    .score-lbl {
+      font-size: 13px;
+      color: var(--text2);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+    .score-track {
+      width: 260px;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      margin: 18px auto 0;
+      overflow: hidden;
+    }
+    .score-fill {
+      height: 100%;
+      border-radius: 3px;
+      background: linear-gradient(90deg,var(--accent),var(--accent2));
+      width: 0%;
+      transition: width 1.6s cubic-bezier(0.4,0,0.2,1);
+    }
+    .score-summary {
+      margin-top: 20px;
+      font-size: 15px;
+      color: var(--text2);
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
+    }
+
+    /* Results grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+    .rc {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      animation: fadeUp 0.4s ease both;
+    }
+    .rc.full { grid-column: 1 / -1; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .rc-head {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .rc-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 17px;
+      flex-shrink: 0;
+    }
+    .rc-title {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14.5px;
+      font-weight: 600;
+    }
+
+    /* Tags */
+    .tag {
+      display: inline-block;
+      padding: 3px 11px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+      margin: 3px 3px 3px 0;
+    }
+    .tag-blue   { background: rgba(99,102,241,0.12); color: #A5B4FC; border: 1px solid rgba(99,102,241,0.2); }
+    .tag-green  { background: rgba(16,185,129,0.1);  color: #6EE7B7; border: 1px solid rgba(16,185,129,0.2); }
+    .tag-yellow { background: rgba(245,158,11,0.1);  color: #FCD34D; border: 1px solid rgba(245,158,11,0.2); }
+    .tag-red    { background: rgba(239,68,68,0.1);   color: #FCA5A5; border: 1px solid rgba(239,68,68,0.2); }
+
+    /* Dot list */
+    .dot-list { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .dot-list li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.55;
+    }
+    .dot-list li::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      margin-top: 7px;
+      flex-shrink: 0;
+    }
+
+    /* Body text inside cards */
+    .body-text { font-size: 14px; color: var(--text2); line-height: 1.65; }
+
+    /* Competition */
+    .comp-bar {
+      display: flex;
+      gap: 4px;
+      margin: 10px 0 14px;
+    }
+    .comp-dot {
+      width: 30px; height: 5px;
+      border-radius: 3px;
+      background: var(--border);
+    }
+    .comp-dot.on { background: var(--accent); }
+
+    /* Revenue items */
+    .rev-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 13px 14px;
+      margin-bottom: 9px;
+    }
+    .rev-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .rev-name { font-size: 14px; font-weight: 600; color: var(--text); }
+    .rev-desc { font-size: 13px; color: var(--text2); }
+
+    /* Risk items */
+    .risk-item {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 14px;
+      margin-bottom: 9px;
+    }
+    .risk-title { font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+    .risk-mit { font-size: 13px; color: var(--text2); line-height: 1.5; }
+
+    /* Persona */
+    .persona-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    .persona-section h4 {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text3);
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    /* Reset button */
+    .btn-reset {
+      width: 100%;
+      margin-top: 24px;
+      padding: 13px;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      color: var(--text2);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-reset:hover {
+      border-color: var(--accent);
+      color: var(--text);
+      background: rgba(99,102,241,0.05);
+    }
+
+    /* Error toast */
+    .toast {
+      position: fixed;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(239,68,68,0.95);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      z-index: 200;
+      white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+    }
+    .toast.show { display: block; animation: fadeUp 0.3s ease; }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      nav { padding: 16px 20px; }
+      .hero { padding: 52px 20px 40px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .results-grid { grid-template-columns: 1fr; }
+      .persona-cols { grid-template-columns: 1fr; }
+      .rc.full { grid-column: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="logo">LaunchIQ</div>
+    <div class="nav-badge">Powered by Gemini AI</div>
+  </nav>
+
+  <!-- MAIN INPUT VIEW -->
+  <div id="main-view">
+    <div class="hero">
+      <div class="hero-chip">AI Startup Validator</div>
+      <h1>Validate your<br><span>startup idea</span><br>in seconds</h1>
+      <p>Get AI-powered market analysis, customer personas, revenue models, and a go-to-market strategy — before writing a single line of code.</p>
+    </div>
+
+    <div class="form-wrap">
+      <!-- Form card -->
+      <div class="card">
+        <div class="form-grid">
+          <div class="field">
+            <label>Idea / Product Name</label>
+            <input type="text" id="ideaName" placeholder="e.g. StudyMate, EcoTrack, FoodRoute…" />
+          </div>
+          <div class="field">
+            <label>Target Market / Country</label>
+            <input type="text" id="targetMarket" placeholder="e.g. Georgia, EU, Global…" />
+          </div>
+          <div class="field full">
+            <label>What problem does it solve?</label>
+            <textarea id="problem" placeholder="Describe the core problem your idea addresses in 1–3 sentences…"></textarea>
+          </div>
+          <div class="field full">
+            <label>Who is your target audience?</label>
+            <input type="text" id="audience" placeholder="e.g. University students in Tbilisi, freelancers, small business owners…" />
+          </div>
+        </div>
+        <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+          Analyze My Idea →
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div id="loading">
+    <div class="spinner"></div>
+    <div class="loading-title">Analyzing your idea…</div>
+    <div class="loading-steps">
+      <div class="step" id="s1">Evaluating market viability</div>
+      <div class="step" id="s2">Building customer persona</div>
+      <div class="step" id="s3">Scanning competitive landscape</div>
+      <div class="step" id="s4">Modeling revenue streams</div>
+      <div class="step" id="s5">Drafting go-to-market strategy</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results">
+    <div class="results-header">
+      <h2>Analysis Complete</h2>
+      <div class="idea-name-display" id="ideaLabel"></div>
+    </div>
+
+    <!-- Score -->
+    <div class="score-card" style="max-width:920px;margin:0 auto 18px;">
+      <div class="score-num" id="scoreNum">0</div>
+      <div class="score-lbl">Viability Score / 100</div>
+      <div class="score-track"><div class="score-fill" id="scoreFill"></div></div>
+      <p class="score-summary" id="scoreSummary"></p>
+    </div>
+
+    <!-- Grid -->
+    <div class="results-grid">
+
+      <!-- Problem–Solution Fit -->
+      <div class="rc" style="animation-delay:.08s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(99,102,241,0.12)">💡</div>
+          <span class="rc-title">Problem–Solution Fit</span>
+        </div>
+        <p class="body-text" id="psFit"></p>
+      </div>
+
+      <!-- Competition -->
+      <div class="rc" style="animation-delay:.13s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(245,158,11,0.1)">⚔️</div>
+          <span class="rc-title">Competitive Landscape</span>
+        </div>
+        <div id="compLevelHTML"></div>
+        <p class="body-text" style="margin-bottom:12px" id="compEdge"></p>
+        <div id="compTags"></div>
+      </div>
+
+      <!-- Persona full-width -->
+      <div class="rc full" style="animation-delay:.18s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(16,185,129,0.1)">👤</div>
+          <span class="rc-title">Ideal Customer Persona</span>
+        </div>
+        <div class="persona-cols">
+          <div class="persona-section">
+            <h4>Profile</h4>
+            <p class="body-text" id="personaProfile"></p>
+          </div>
+          <div>
+            <div class="persona-section" style="margin-bottom:16px">
+              <h4>Pain Points</h4>
+              <ul class="dot-list" id="personaPains"></ul>
+            </div>
+            <div class="persona-section">
+              <h4>Goals</h4>
+              <ul class="dot-list" id="personaGoals"></ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Revenue Models -->
+      <div class="rc" style="animation-delay:.23s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(99,102,241,0.12)">💰</div>
+          <span class="rc-title">Revenue Models</span>
+        </div>
+        <div id="revenueList"></div>
+      </div>
+
+      <!-- GTM Strategy -->
+      <div class="rc" style="animation-delay:.28s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(167,139,250,0.1)">🚀</div>
+          <span class="rc-title">Go-to-Market Strategy</span>
+        </div>
+        <ul class="dot-list" id="gtmList"></ul>
+      </div>
+
+      <!-- Risks full-width -->
+      <div class="rc full" style="animation-delay:.33s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(239,68,68,0.1)">⚠️</div>
+          <span class="rc-title">Key Risks & Mitigations</span>
+        </div>
+        <div id="riskList"></div>
+      </div>
+
+      <!-- Next Steps full-width -->
+      <div class="rc full" style="animation-delay:.38s">
+        <div class="rc-head">
+          <div class="rc-icon" style="background:rgba(16,185,129,0.1)">✅</div>
+          <span class="rc-title">Recommended Next Steps</span>
+        </div>
+        <ul class="dot-list" id="nextList"></ul>
+      </div>
+
+    </div><!-- /results-grid -->
+
+    <div style="max-width:920px;margin:0 auto">
+      <button class="btn-reset" onclick="reset()">← Analyze Another Idea</button>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ── API calls go through the Netlify function (key is server-side only) ──
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+    function toast(msg) {
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    function show(id) { document.getElementById(id).style.display = ''; }
+    function hide(id) { document.getElementById(id).style.display = 'none'; }
+
+    // Loading step sequencer
+    let stepTimer;
+    function startSteps() {
+      const ids = ['s1','s2','s3','s4','s5'];
+      ids.forEach(id => { document.getElementById(id).className = 'step'; });
+      let i = 0;
+      document.getElementById(ids[0]).className = 'step active';
+      stepTimer = setInterval(() => {
+        if (i < ids.length - 1) {
+          document.getElementById(ids[i]).className = 'step done';
+          i++;
+          document.getElementById(ids[i]).className = 'step active';
+        }
+      }, 900);
+    }
+    function stopSteps() {
+      clearInterval(stepTimer);
+      ['s1','s2','s3','s4','s5'].forEach(id => {
+        document.getElementById(id).className = 'step done';
+      });
+    }
+
+    // Score animation
+    function animateScore(target) {
+      const numEl = document.getElementById('scoreNum');
+      const fill  = document.getElementById('scoreFill');
+      const color = target >= 70 ? '#10B981' : target >= 50 ? '#F59E0B' : '#EF4444';
+      numEl.style.color = color;
+
+      let cur = 0;
+      const step = target / 45;
+      const t = setInterval(() => {
+        cur = Math.min(cur + step, target);
+        numEl.textContent = Math.floor(cur);
+        if (cur >= target) clearInterval(t);
+      }, 28);
+
+      setTimeout(() => { fill.style.width = target + '%'; }, 120);
+    }
+
+    // Competition bar
+    function compBar(level) {
+      const map = { 'Low': 1, 'Medium': 2, 'High': 3, 'Very High': 4 };
+      const filled = map[level] || 2;
+      const colorMap = { 'Low': '#10B981', 'Medium': '#F59E0B', 'High': '#EF4444', 'Very High': '#EF4444' };
+      const dots = [0,1,2,3].map(i =>
+        `<div class="comp-dot ${i < filled ? 'on' : ''}"></div>`
+      ).join('');
+      return `
+        <div style="font-size:15px;font-weight:600;color:${colorMap[level]||'#94A3B8'}">${level} Competition</div>
+        <div class="comp-bar">${dots}</div>`;
+    }
+
+    // Potential tag
+    function potTag(p) {
+      const cls = p === 'High' ? 'tag-green' : p === 'Medium' ? 'tag-yellow' : 'tag-red';
+      return `<span class="tag ${cls}">${p} Potential</span>`;
+    }
+
+    // ── Main analyze function ─────────────────────────────────────────────────
+    async function analyze() {
+      const ideaName     = document.getElementById('ideaName').value.trim();
+      const problem      = document.getElementById('problem').value.trim();
+      const audience     = document.getElementById('audience').value.trim();
+      const targetMarket = document.getElementById('targetMarket').value.trim();
+
+      if (!ideaName)  return toast('Please enter an idea or product name.');
+      if (!problem)   return toast('Please describe the problem your idea solves.');
+      if (!audience)  return toast('Please describe your target audience.');
+
+      // Switch views
+      document.getElementById('main-view').style.display = 'none';
+      document.getElementById('results').classList.remove('active');
+      document.getElementById('loading').classList.add('active');
+      startSteps();
+
+      const prompt = `You are a seasoned startup advisor and venture analyst. Analyze the following business idea and return a comprehensive JSON report.
+
+Idea Name: "${ideaName}"
+Problem Solved: ${problem}
+Target Audience: ${audience}
+Market / Country: ${targetMarket || 'Not specified'}
+
+Return ONLY a valid JSON object — no markdown, no backticks, no explanation — with this exact structure:
+{
+  "viabilityScore": <integer 0-100>,
+  "summary": "<2-3 sentence overall assessment>",
+  "problemSolutionFit": "<2-3 sentences on how well the idea addresses the stated problem>",
+  "persona": {
+    "profile": "<2 sentences: age range, occupation, lifestyle of the ideal customer>",
+    "painPoints": ["<pain 1>","<pain 2>","<pain 3>"],
+    "goals": ["<goal 1>","<goal 2>","<goal 3>"]
+  },
+  "competition": {
+    "level": "<Low|Medium|High|Very High>",
+    "topCompetitors": ["<competitor 1>","<competitor 2>","<competitor 3>"],
+    "competitiveEdge": "<1-2 sentences on potential differentiation>"
+  },
+  "revenueModels": [
+    {"model":"<name>","description":"<brief description>","potential":"<Low|Medium|High>"},
+    {"model":"<name>","description":"<brief description>","potential":"<Low|Medium|High>"},
+    {"model":"<name>","description":"<brief description>","potential":"<Low|Medium|High>"}
+  ],
+  "goToMarket": ["<step 1>","<step 2>","<step 3>","<step 4>","<step 5>"],
+  "risks": [
+    {"risk":"<risk title>","mitigation":"<mitigation strategy>"},
+    {"risk":"<risk title>","mitigation":"<mitigation strategy>"},
+    {"risk":"<risk title>","mitigation":"<mitigation strategy>"}
+  ],
+  "nextSteps": ["<step 1>","<step 2>","<step 3>","<step 4>"]
+}`;
+
+      try {
+        const res = await fetch('/.netlify/functions/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || `Server error ${res.status}`);
+        }
+
+        const data = await res.json();
+        const raw  = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+
+        let parsed;
+        try {
+          parsed = JSON.parse(raw.replace(/```json|```/g,'').trim());
+        } catch {
+          throw new Error('Could not parse AI response. Please try again.');
+        }
+
+        stopSteps();
+        renderResults(parsed, ideaName);
+
+      } catch (err) {
+        stopSteps();
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('main-view').style.display = '';
+        toast(err.message || 'Something went wrong. Please try again.');
+      }
+    }
+
+    // ── Render results ────────────────────────────────────────────────────────
+    function renderResults(d, ideaName) {
+      document.getElementById('loading').classList.remove('active');
+
+      document.getElementById('ideaLabel').textContent = ideaName;
+      document.getElementById('scoreSummary').textContent = d.summary || '';
+      document.getElementById('psFit').textContent        = d.problemSolutionFit || '';
+
+      // Score (animate after brief delay)
+      setTimeout(() => animateScore(d.viabilityScore || 0), 200);
+
+      // Competition
+      document.getElementById('compLevelHTML').innerHTML = compBar(d.competition?.level || 'Medium');
+      document.getElementById('compEdge').textContent    = d.competition?.competitiveEdge || '';
+      const tagsEl = document.getElementById('compTags');
+      tagsEl.innerHTML = (d.competition?.topCompetitors || [])
+        .map(c => `<span class="tag tag-blue">${c}</span>`).join('');
+
+      // Persona
+      document.getElementById('personaProfile').textContent = d.persona?.profile || '';
+      document.getElementById('personaPains').innerHTML =
+        (d.persona?.painPoints || []).map(p => `<li>${p}</li>`).join('');
+      document.getElementById('personaGoals').innerHTML =
+        (d.persona?.goals || []).map(g => `<li>${g}</li>`).join('');
+
+      // Revenue
+      document.getElementById('revenueList').innerHTML =
+        (d.revenueModels || []).map(r => `
+          <div class="rev-item">
+            <div class="rev-row">
+              <span class="rev-name">${r.model}</span>
+              ${potTag(r.potential)}
+            </div>
+            <div class="rev-desc">${r.description}</div>
+          </div>`).join('');
+
+      // GTM
+      document.getElementById('gtmList').innerHTML =
+        (d.goToMarket || []).map(s => `<li>${s}</li>`).join('');
+
+      // Risks
+      document.getElementById('riskList').innerHTML =
+        (d.risks || []).map(r => `
+          <div class="risk-item">
+            <div class="risk-title">⚠ ${r.risk}</div>
+            <div class="risk-mit"><strong>Mitigation:</strong> ${r.mitigation}</div>
+          </div>`).join('');
+
+      // Next Steps
+      document.getElementById('nextList').innerHTML =
+        (d.nextSteps || []).map(s => `<li>${s}</li>`).join('');
+
+      document.getElementById('results').classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ── Reset ─────────────────────────────────────────────────────────────────
+    function reset() {
+      document.getElementById('results').classList.remove('active');
+      document.getElementById('main-view').style.display = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>
