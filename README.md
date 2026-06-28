@@ -26,7 +26,7 @@ LaunchIQ is an AI-powered startup validation tool that gives founders and studen
 | Layer | Technology |
 |-------|-----------|
 | Frontend | Vanilla HTML, CSS, JavaScript |
-| AI Engine | Google Gemini API (`gemini-2.0-flash`) |
+| AI Engine | Groq API (`llama-3.3-70b-versatile`) |
 | Fonts | Google Fonts (Space Grotesk, Inter) |
 | Deployment | Netlify / Vercel |
 
@@ -47,8 +47,8 @@ LaunchIQ is an AI-powered startup validation tool that gives founders and studen
 3. Select this repo — Netlify auto-detects the `netlify.toml` config
 4. Click **Deploy**
 5. Go to **Site settings → Environment variables → Add variable**
-   - Key: `GEMINI_API_KEY`
-   - Value: your key from [aistudio.google.com](https://aistudio.google.com)
+   - Key: `GROQ_API_KEY`
+   - Value: your free key from [console.groq.com](https://console.groq.com)
 6. Trigger a redeploy — done ✅
 
 > The API key lives only in Netlify's environment. It is never sent to the browser.
@@ -77,7 +77,7 @@ This project is paired with an **n8n workflow** that automates competitive resea
 
 ## Built With
 
-- [Google Gemini API](https://aistudio.google.com/) — AI analysis engine (free tier)
+- [Groq API](https://console.groq.com/) — AI analysis engine (free, no billing required)
 - [Space Grotesk](https://fonts.google.com/specimen/Space+Grotesk) — Display typography
 - [Inter](https://fonts.google.com/specimen/Inter) — Body typography
 

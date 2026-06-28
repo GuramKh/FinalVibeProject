@@ -512,7 +512,7 @@
   <!-- NAV -->
   <nav>
     <div class="logo">LaunchIQ</div>
-    <div class="nav-badge">Powered by Gemini AI</div>
+    <div class="nav-badge">Powered by Groq AI</div>
   </nav>
 
   <!-- MAIN INPUT VIEW -->
@@ -811,7 +811,7 @@ Return ONLY a valid JSON object â€” no markdown, no backticks, no explanation â€
         }
 
         const data = await res.json();
-        const raw  = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        const raw  = data.text || '';
 
         let parsed;
         try {
