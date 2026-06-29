@@ -458,6 +458,76 @@
       margin-bottom: 10px;
     }
 
+    /* Email report card */
+    .email-card {
+      background: linear-gradient(135deg, rgba(16,185,129,0.08), rgba(99,102,241,0.06));
+      border: 1px solid rgba(16,185,129,0.25);
+      border-radius: 16px;
+      padding: 28px;
+      margin-top: 16px;
+      animation: fadeUp 0.4s ease both;
+      animation-delay: 0.45s;
+    }
+    .email-card-head {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 6px;
+    }
+    .email-card h3 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 15px; font-weight: 600; color: var(--text);
+    }
+    .email-card p {
+      font-size: 13px; color: var(--text2); margin-bottom: 16px;
+    }
+    .email-row {
+      display: flex; gap: 10px;
+    }
+    .email-row input {
+      flex: 1;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 14px;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .email-row input:focus { border-color: var(--green); }
+    .email-row input::placeholder { color: var(--text3); }
+    .btn-email {
+      padding: 11px 22px;
+      background: var(--green);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .btn-email:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    .btn-email:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Success toast (green) */
+    .toast-success {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16,185,129,0.95);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+      z-index: 200;
+      white-space: nowrap;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .toast-success.show { display: block; animation: fadeUp 0.3s ease; }
+
     /* Reset button */
     .btn-reset {
       width: 100%;
@@ -665,9 +735,26 @@
     </div><!-- /results-grid -->
 
     <div style="max-width:920px;margin:0 auto">
+
+      <!-- Email report card -->
+      <div class="email-card">
+        <div class="email-card-head">
+          <span style="font-size:20px">📧</span>
+          <h3>Get the full report in your inbox</h3>
+        </div>
+        <p>Our AI agent will email you a detailed version of this analysis — formatted and ready to share.</p>
+        <div class="email-row">
+          <input type="email" id="reportEmail" placeholder="your@email.com" />
+          <button class="btn-email" id="emailBtn" onclick="sendReport()">Send Report</button>
+        </div>
+      </div>
+
       <button class="btn-reset" onclick="reset()">← Analyze Another Idea</button>
     </div>
   </div>
+
+  <!-- Success toast -->
+  <div class="toast-success" id="toastSuccess"></div>
 
   <!-- Toast -->
   <div class="toast" id="toast"></div>
@@ -833,6 +920,8 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
 
     // ── Render results ────────────────────────────────────────────────────────
     function renderResults(d, ideaName) {
+      currentAnalysis = d;
+      currentIdea     = ideaName;
       document.getElementById('loading').classList.remove('active');
 
       document.getElementById('ideaLabel').textContent = ideaName;
@@ -887,10 +976,62 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    // ── Success toast ─────────────────────────────────────────────────────────
+    function toastOk(msg) {
+      const el = document.getElementById('toastSuccess');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 4000);
+    }
+
+    // ── Send email report via n8n webhook ─────────────────────────────────────
+    // Replace with your actual n8n webhook URL after importing the workflow
+    const N8N_WEBHOOK = 'https://mamboss.app.n8n.cloud/webhook-test/launchiq-report';
+
+    // Stores current analysis data so sendReport() can include it
+    let currentAnalysis = null;
+    let currentIdea     = null;
+
+    async function sendReport() {
+      const email = document.getElementById('reportEmail').value.trim();
+      if (!email || !email.includes('@')) return toast('Please enter a valid email address.');
+      if (!currentAnalysis)              return toast('No analysis to send yet.');
+
+      const btn = document.getElementById('emailBtn');
+      btn.disabled = true;
+      btn.textContent = 'Sending…';
+
+      try {
+        const res = await fetch(N8N_WEBHOOK, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email,
+            ideaName:  currentIdea,
+            problem:   document.getElementById('problem').value.trim(),
+            audience:  document.getElementById('audience').value.trim(),
+            market:    document.getElementById('targetMarket').value.trim(),
+            analysis:  currentAnalysis
+          })
+        });
+
+        if (!res.ok) throw new Error('Webhook error');
+        toastOk(`✓ Report sent to ${email}`);
+        document.getElementById('reportEmail').value = '';
+      } catch {
+        toast('Could not reach the email agent. Check your n8n webhook URL.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Send Report';
+      }
+    }
+
     // ── Reset ─────────────────────────────────────────────────────────────────
     function reset() {
       document.getElementById('results').classList.remove('active');
       document.getElementById('main-view').style.display = '';
+      currentAnalysis = null;
+      currentIdea     = null;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   </script>
