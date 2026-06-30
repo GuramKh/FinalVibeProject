@@ -24,7 +24,11 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const store = getStore('launchiq-history');
+    const store = getStore({
+      name: 'launchiq-history',
+      siteID: process.env.BLOBS_SITE_ID,
+      token: process.env.BLOBS_TOKEN
+    });
     const id = `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
     const key = `${user.sub}/${id}`;
 
