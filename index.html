@@ -67,6 +67,82 @@
       border-radius: 100px;
     }
 
+    /* ── NAV RIGHT (auth) ── */
+    .nav-right { display: flex; align-items: center; gap: 16px; }
+    .nav-link {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text2);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 7px 16px;
+      border-radius: 100px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .nav-link:hover { border-color: var(--accent); color: var(--text); }
+    .nav-user { font-size: 13px; color: var(--text3); }
+
+    /* ── AUTH GATE ── */
+    #auth-view {
+      display: none;
+      min-height: calc(100vh - 64px);
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    #auth-view.active { display: flex; }
+    .auth-card {
+      max-width: 380px;
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 36px 28px;
+      text-align: center;
+    }
+    .auth-card p {
+      font-size: 14px;
+      color: var(--text2);
+      line-height: 1.6;
+      margin: 10px 0 24px;
+    }
+
+    /* ── HISTORY VIEW ── */
+    #history-view { display: none; max-width: 920px; margin: 0 auto; padding: 52px 24px 80px; }
+    #history-view.active { display: block; }
+    .history-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .history-head h2 { font-family: 'Space Grotesk', sans-serif; font-size: 26px; font-weight: 700; }
+    .history-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .history-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color 0.2s, transform 0.15s;
+      text-align: left;
+    }
+    .history-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .hc-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .hc-name { font-size: 16px; font-weight: 600; color: var(--text); }
+    .hc-score { font-family: 'Space Grotesk', sans-serif; font-size: 22px; font-weight: 700; }
+    .hc-desc { font-size: 13px; color: var(--text2); line-height: 1.5; margin-bottom: 10px; }
+    .hc-date { font-size: 11.5px; color: var(--text3); }
+    .history-empty { text-align: center; padding: 60px 20px; color: var(--text2); }
+
+    /* ── DETAIL VIEW ── */
+    #detail-view { display: none; max-width: 920px; margin: 0 auto; padding: 52px 24px 80px; }
+    #detail-view.active { display: block; }
+    .btn-back {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; border: 1px solid var(--border);
+      color: var(--text2); font-family: 'Inter', sans-serif; font-size: 13px;
+      padding: 9px 18px; border-radius: 100px; cursor: pointer;
+      margin-bottom: 24px; transition: all 0.2s;
+    }
+    .btn-back:hover { border-color: var(--accent); color: var(--text); }
+
     /* ── HERO ── */
     .hero {
       text-align: center;
@@ -574,16 +650,32 @@
       .results-grid { grid-template-columns: 1fr; }
       .persona-cols { grid-template-columns: 1fr; }
       .rc.full { grid-column: 1; }
+      .history-grid { grid-template-columns: 1fr; }
     }
   </style>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 </head>
 <body>
 
   <!-- NAV -->
   <nav>
     <div class="logo">LaunchIQ</div>
-    <div class="nav-badge">Powered by Groq AI</div>
+    <div class="nav-right" id="navRight">
+      <button class="nav-link" id="historyBtn" onclick="openHistory()" style="display:none">History</button>
+      <span class="nav-user" id="navUserEmail" style="display:none"></span>
+      <button class="nav-link" id="logoutBtn" onclick="doLogout()" style="display:none">Log out</button>
+    </div>
   </nav>
+
+  <!-- AUTH GATE -->
+  <div id="auth-view">
+    <div class="auth-card">
+      <div class="logo" style="font-size:26px;margin-bottom:10px">LaunchIQ</div>
+      <p>Sign in to validate startup ideas and keep a history of every analysis you run.</p>
+      <button class="btn-analyze" onclick="netlifyIdentity.open('login')">Sign In</button>
+      <button class="btn-reset" style="margin-top:10px" onclick="netlifyIdentity.open('signup')">Create an Account</button>
+    </div>
+  </div>
 
   <!-- MAIN INPUT VIEW -->
   <div id="main-view">
@@ -753,6 +845,21 @@
     </div>
   </div>
 
+  <!-- HISTORY VIEW -->
+  <div id="history-view">
+    <div class="history-head">
+      <h2>Your Analysis History</h2>
+      <button class="btn-back" style="margin:0" onclick="closeHistory()">← Back to LaunchIQ</button>
+    </div>
+    <div class="history-grid" id="historyGrid"></div>
+  </div>
+
+  <!-- DETAIL VIEW -->
+  <div id="detail-view">
+    <button class="btn-back" onclick="closeDetail()">← Back to History</button>
+    <div id="detailContent"></div>
+  </div>
+
   <!-- Success toast -->
   <div class="toast-success" id="toastSuccess"></div>
 
@@ -760,6 +867,65 @@
   <div class="toast" id="toast"></div>
 
   <script>
+    // ── Auth (Netlify Identity) ─────────────────────────────────────────────────
+    let currentUser = null;
+
+    function showApp() {
+      document.getElementById('auth-view').classList.remove('active');
+      document.getElementById('navRight').style.display = '';
+      document.getElementById('historyBtn').style.display = '';
+      document.getElementById('navUserEmail').style.display = '';
+      document.getElementById('logoutBtn').style.display = '';
+      document.getElementById('navUserEmail').textContent = currentUser?.email || '';
+      goTo('main');
+    }
+
+    function showAuthGate() {
+      document.getElementById('auth-view').classList.add('active');
+      document.getElementById('historyBtn').style.display = 'none';
+      document.getElementById('navUserEmail').style.display = 'none';
+      document.getElementById('logoutBtn').style.display = 'none';
+      ['main-view','loading','results','history-view','detail-view'].forEach(id => {
+        document.getElementById(id).classList.remove('active');
+        if (id === 'main-view') document.getElementById(id).style.display = 'none';
+      });
+    }
+
+    function doLogout() { netlifyIdentity.logout(); }
+
+    netlifyIdentity.on('init', user => {
+      currentUser = user;
+      user ? showApp() : showAuthGate();
+    });
+    netlifyIdentity.on('login', user => {
+      currentUser = user;
+      netlifyIdentity.close();
+      showApp();
+    });
+    netlifyIdentity.on('logout', () => {
+      currentUser = null;
+      showAuthGate();
+    });
+    netlifyIdentity.init();
+
+    // Returns a fresh JWT for calling authenticated functions
+    async function authHeader() {
+      if (!currentUser) return {};
+      const token = await currentUser.jwt();
+      return { Authorization: `Bearer ${token}` };
+    }
+
+    // ── View switching ──────────────────────────────────────────────────────────
+    // Views: main, loading, results, history, detail
+    function goTo(view) {
+      document.getElementById('main-view').style.display = view === 'main' ? '' : 'none';
+      document.getElementById('loading').classList.toggle('active', view === 'loading');
+      document.getElementById('results').classList.toggle('active', view === 'results');
+      document.getElementById('history-view').classList.toggle('active', view === 'history');
+      document.getElementById('detail-view').classList.toggle('active', view === 'detail');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     // ── API calls go through the Netlify function (key is server-side only) ──
 
     // ── Helpers ───────────────────────────────────────────────────────────────
@@ -844,9 +1010,7 @@
       if (!audience)  return toast('Please describe your target audience.');
 
       // Switch views
-      document.getElementById('main-view').style.display = 'none';
-      document.getElementById('results').classList.remove('active');
-      document.getElementById('loading').classList.add('active');
+      goTo('loading');
       startSteps();
 
       const prompt = `You are a seasoned startup advisor and venture analyst. Analyze the following business idea and return a comprehensive JSON report.
@@ -912,8 +1076,7 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
 
       } catch (err) {
         stopSteps();
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('main-view').style.display = '';
+        goTo('main');
         toast(err.message || 'Something went wrong. Please try again.');
       }
     }
@@ -972,8 +1135,28 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
       document.getElementById('nextList').innerHTML =
         (d.nextSteps || []).map(s => `<li>${s}</li>`).join('');
 
-      document.getElementById('results').classList.add('active');
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      goTo('results');
+      saveToHistory(d, ideaName);
+    }
+
+    // ── Save analysis to history (Netlify Blobs via function) ──────────────────
+    async function saveToHistory(d, ideaName) {
+      try {
+        const headers = await authHeader();
+        await fetch('/.netlify/functions/save-history', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', ...headers },
+          body: JSON.stringify({
+            ideaName,
+            problem:  document.getElementById('problem').value.trim(),
+            audience: document.getElementById('audience').value.trim(),
+            market:   document.getElementById('targetMarket').value.trim(),
+            analysis: d
+          })
+        });
+      } catch {
+        // Non-blocking — history save failures shouldn't interrupt the user
+      }
     }
 
     // ── Success toast ─────────────────────────────────────────────────────────
@@ -986,7 +1169,7 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
 
     // ── Send email report via n8n webhook ─────────────────────────────────────
     // Replace with your actual n8n webhook URL after importing the workflow
-    const N8N_WEBHOOK = 'https://mamboss.app.n8n.cloud/webhook/launchiq-report';
+    const N8N_WEBHOOK = 'YOUR_N8N_WEBHOOK_URL_HERE';
 
     // Stores current analysis data so sendReport() can include it
     let currentAnalysis = null;
