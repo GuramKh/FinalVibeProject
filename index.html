@@ -1217,6 +1217,45 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
       currentIdea     = null;
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
+
+    async function openHistory() {
+  goTo('history');
+  const grid = document.getElementById('historyGrid');
+  grid.innerHTML = '<div class="history-empty">Loading…</div>';
+  try {
+    const headers = await authHeader();
+    const res = await fetch('/.netlify/functions/get-history', { headers });
+    if (!res.ok) throw new Error('Failed to load');
+    const data = await res.json();
+    const items = data.history || [];
+    if (!items.length) {
+      grid.innerHTML = '<div class="history-empty">No analyses yet.</div>';
+      return;
+    }
+    window._historyItems = items;
+    grid.innerHTML = items.map((h, i) => `
+      <div class="history-card" onclick="openDetail(${i})">
+        <div class="hc-top">
+          <span class="hc-name">${h.ideaName}</span>
+          <span class="hc-score">${h.analysis.viabilityScore}</span>
+        </div>
+        <div class="hc-desc">${h.analysis.summary || ''}</div>
+        <div class="hc-date">${new Date(h.createdAt).toLocaleDateString()}</div>
+      </div>`).join('');
+  } catch {
+    grid.innerHTML = '<div class="history-empty">Failed to load history.</div>';
+  }
+}
+
+    function closeHistory() { goTo('main'); }
+
+function openDetail(i) {
+  const h = window._historyItems[i];
+  renderResults(h.analysis, h.ideaName);
+  goTo('results');
+}
+
+function closeDetail() { openHistory(); }
   </script>
 </body>
 </html>
