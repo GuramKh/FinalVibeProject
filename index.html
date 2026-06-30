@@ -923,12 +923,20 @@
       document.getElementById('results').classList.toggle('active', view === 'results');
       document.getElementById('history-view').classList.toggle('active', view === 'history');
       document.getElementById('detail-view').classList.toggle('active', view === 'detail');
+      if (view === 'main') clearForm();
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // ── API calls go through the Netlify function (key is server-side only) ──
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+    function clearForm() {
+      document.getElementById('ideaName').value = '';
+      document.getElementById('targetMarket').value = '';
+      document.getElementById('problem').value = '';
+      document.getElementById('audience').value = '';
+    }
+    
     function toast(msg) {
       const el = document.getElementById('toast');
       el.textContent = msg;
