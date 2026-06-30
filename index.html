@@ -1090,7 +1090,7 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
     }
 
     // ── Render results ────────────────────────────────────────────────────────
-    function renderResults(d, ideaName) {
+    function renderResults(d, ideaName, isNew = true) {
       currentAnalysis = d;
       currentIdea     = ideaName;
       document.getElementById('loading').classList.remove('active');
@@ -1144,7 +1144,7 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
         (d.nextSteps || []).map(s => `<li>${s}</li>`).join('');
 
       goTo('results');
-      saveToHistory(d, ideaName);
+      if (isNew) saveToHistory(d, ideaName);
     }
 
     // ── Save analysis to history (Netlify Blobs via function) ──────────────────
@@ -1259,7 +1259,7 @@ Return ONLY a valid JSON object — no markdown, no backticks, no explanation �
 
 function openDetail(i) {
   const h = window._historyItems[i];
-  renderResults(h.analysis, h.ideaName);
+  renderResults(h.analysis, h.ideaName, false);
   goTo('results');
 }
 
