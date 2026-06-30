@@ -12,7 +12,11 @@ exports.handler = async (event, context) => {
   }
 
   try {
-    const store = getStore('launchiq-history');
+    const store = getStore({
+      name: 'launchiq-history',
+      siteID: process.env.BLOBS_SITE_ID,
+      token: process.env.BLOBS_TOKEN
+    });
     const prefix = `${user.sub}/`;
     const { blobs } = await store.list({ prefix });
 
